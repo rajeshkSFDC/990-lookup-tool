@@ -383,9 +383,8 @@
                 <p>Fetching data from ProPublica...</p>
             </div>
 
-            <div class="results" id="single-results">
-                <button class="btn export-btn" onclick="exportSingleResult()" id="single-export-btn" style="display: none;">Download as CSV</button>
-            </div>
+            <button class="btn export-btn" onclick="exportSingleResult()" id="single-export-btn" style="display: none; margin-top: 20px;">Download as CSV</button>
+            <div class="results" id="single-results"></div>
         </div>
 
         <!-- Batch by EIN Tab -->
@@ -752,7 +751,11 @@ ymca.net
             `;
 
             resultsDiv.classList.add('active');
-            document.getElementById('single-export-btn').style.display = 'block';
+            
+            const exportBtn = document.getElementById('single-export-btn');
+            if (exportBtn) {
+                exportBtn.style.display = 'block';
+            }
         }
 
         async function lookupBatchEIN() {
@@ -983,7 +986,7 @@ ymca.net
             const successCount = data.filter(r => !r.error || r.error === 'Basic info only').length;
             const errorCount = data.filter(r => r.error && r.error !== 'Basic info only').length;
             
-            const revenues = data.filter(r => r.revenue && r.revenue > 0).map(r => r.revenue);
+            const revenues = data.filter(r => r.total_revenue && r.total_revenue > 0).map(r => r.total_revenue);
             const avgRevenue = revenues.length > 0 ? revenues.reduce((a, b) => a + b, 0) / revenues.length : 0;
             const medianRevenue = revenues.length > 0 ? revenues.sort((a, b) => a - b)[Math.floor(revenues.length / 2)] : 0;
 
