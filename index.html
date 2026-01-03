@@ -616,16 +616,23 @@ ymca.net
             window.singleResultData = {
                 ein: org.ein || 'N/A',
                 name: org.name || 'N/A',
+                street_address: org.street || 'N/A',
                 city: org.city || 'N/A',
                 state: org.state || 'N/A',
+                zip: org.zipcode || 'N/A',
                 subsection: org.subsection_code || 'N/A',
                 ruling_year: org.ruling_year || 'N/A',
+                mission: org.mission || 'N/A',
+                total_revenue: recent.totrevenue || 0,
+                total_expenses: recent.totfuncexpns || 0,
+                net_assets: recent.totnetassetend || 0,
+                contributions_grants: recent.totcntrbgfts || 0,
+                program_service_revenue: recent.totprgmrevnue || 0,
+                employees: recent.totemployee || 0,
+                volunteers: recent.totvlnteers || 0,
+                num_programs: recent.numofprogramservices || 0,
                 recent_year: recent.tax_prd_yr || 'N/A',
                 form_type: recent.formtype || 'N/A',
-                revenue: recent.totrevenue || 0,
-                expenses: recent.totfuncexpns || 0,
-                assets: recent.totassetsend || 0,
-                liabilities: recent.totliabend || 0,
                 pdf_url: recent.pdf_url || ''
             };
 
@@ -638,8 +645,12 @@ ymca.net
                         <span class="result-value">${org.ein || 'N/A'}</span>
                     </div>
                     <div class="result-row">
+                        <span class="result-label">Address:</span>
+                        <span class="result-value">${org.street || 'N/A'}</span>
+                    </div>
+                    <div class="result-row">
                         <span class="result-label">Location:</span>
-                        <span class="result-value">${org.city || 'N/A'}, ${org.state || 'N/A'}</span>
+                        <span class="result-value">${org.city || 'N/A'}, ${org.state || 'N/A'} ${org.zipcode || ''}</span>
                     </div>
                     <div class="result-row">
                         <span class="result-label">Subsection:</span>
@@ -649,11 +660,17 @@ ymca.net
                         <span class="result-label">Ruling Year:</span>
                         <span class="result-value">${org.ruling_year || 'N/A'}</span>
                     </div>
+                    ${org.mission ? `
+                    <div class="result-row">
+                        <span class="result-label">Mission:</span>
+                        <span class="result-value">${org.mission}</span>
+                    </div>
+                    ` : ''}
                 </div>
 
                 ${recent.tax_prd_yr ? `
                 <div class="result-card">
-                    <h3>Most Recent Filing (${recent.tax_prd_yr})</h3>
+                    <h3>Financial Overview (${recent.tax_prd_yr})</h3>
                     <div class="result-row">
                         <span class="result-label">Form Type:</span>
                         <span class="result-value">${recent.formtype || 'N/A'}</span>
@@ -667,17 +684,65 @@ ymca.net
                         <span class="result-value">$${formatNumber(recent.totfuncexpns)}</span>
                     </div>
                     <div class="result-row">
-                        <span class="result-label">Total Assets:</span>
-                        <span class="result-value">$${formatNumber(recent.totassetsend)}</span>
+                        <span class="result-label">Net Assets:</span>
+                        <span class="result-value">$${formatNumber(recent.totnetassetend)}</span>
+                    </div>
+                </div>
+
+                <div class="result-card">
+                    <h3>Revenue Breakdown</h3>
+                    <div class="result-row">
+                        <span class="result-label">Contributions & Grants:</span>
+                        <span class="result-value">$${formatNumber(recent.totcntrbgfts)}</span>
                     </div>
                     <div class="result-row">
-                        <span class="result-label">Total Liabilities:</span>
-                        <span class="result-value">$${formatNumber(recent.totliabend)}</span>
+                        <span class="result-label">Program Service Revenue:</span>
+                        <span class="result-value">$${formatNumber(recent.totprgmrevnue)}</span>
+                    </div>
+                    <div class="result-row">
+                        <span class="result-label">Investment Income:</span>
+                        <span class="result-value">$${formatNumber(recent.invstmntinc)}</span>
+                    </div>
+                </div>
+
+                <div class="result-card">
+                    <h3>Expense Breakdown</h3>
+                    <div class="result-row">
+                        <span class="result-label">Grants Paid:</span>
+                        <span class="result-value">$${formatNumber(recent.totgrntstogovt)}</span>
+                    </div>
+                    <div class="result-row">
+                        <span class="result-label">Salaries & Compensation:</span>
+                        <span class="result-value">$${formatNumber(recent.compnsatncurrofcr)}</span>
+                    </div>
+                    <div class="result-row">
+                        <span class="result-label">Fundraising Expenses:</span>
+                        <span class="result-value">$${formatNumber(recent.totfundraisingexp)}</span>
+                    </div>
+                </div>
+
+                <div class="result-card">
+                    <h3>People & Programs</h3>
+                    <div class="result-row">
+                        <span class="result-label">Employees:</span>
+                        <span class="result-value">${formatNumber(recent.totemployee)}</span>
+                    </div>
+                    <div class="result-row">
+                        <span class="result-label">Volunteers:</span>
+                        <span class="result-value">${formatNumber(recent.totvlnteers)}</span>
+                    </div>
+                    <div class="result-row">
+                        <span class="result-label">Voting Board Members:</span>
+                        <span class="result-value">${formatNumber(recent.indvotingmemberscnt)}</span>
+                    </div>
+                    <div class="result-row">
+                        <span class="result-label">Number of Programs:</span>
+                        <span class="result-value">${recent.numofprogramservices || 0}</span>
                     </div>
                     ${recent.pdf_url ? `
                     <div class="result-row">
                         <span class="result-label">990 PDF:</span>
-                        <span class="result-value"><a href="${recent.pdf_url}" target="_blank">View PDF</a></span>
+                        <span class="result-value"><a href="${recent.pdf_url}" target="_blank">View Form 990</a></span>
                     </div>
                     ` : ''}
                 </div>
@@ -804,15 +869,65 @@ ymca.net
             const recent = data.filings_with_data?.[0] || {};
 
             const baseData = {
+                // Basic Info
                 ein: org.ein || 'N/A',
                 name: org.name || 'N/A',
+                street_address: org.street || 'N/A',
                 city: org.city || 'N/A',
                 state: org.state || 'N/A',
+                zip: org.zipcode || 'N/A',
                 subsection: org.subsection_code || 'N/A',
-                revenue: recent.totrevenue || 0,
-                expenses: recent.totfuncexpns || 0,
-                assets: recent.totassetsend || 0,
-                year: recent.tax_prd_yr || 'N/A',
+                classification: org.classification_codes || 'N/A',
+                ruling_year: org.ruling_year || 'N/A',
+                
+                // Revenue & Income (Total)
+                total_revenue: recent.totrevenue || 0,
+                total_revenue_prior: recent.totrevenueprev || 0,
+                
+                // Revenue Breakdown
+                contributions_grants: recent.totcntrbgfts || 0,
+                program_service_revenue: recent.totprgmrevnue || 0,
+                investment_income: recent.invstmntinc || 0,
+                other_revenue: recent.othrevenue || 0,
+                
+                // Expenses (Total)
+                total_expenses: recent.totfuncexpns || 0,
+                total_expenses_prior: recent.totfuncexpnsprev || 0,
+                
+                // Expense Breakdown
+                grants_paid: recent.totgrntstogovt || 0,
+                salaries_compensation: recent.compnsatncurrofcr || 0,
+                fundraising_expenses: recent.totfundraisingexp || 0,
+                other_expenses: recent.othexpenses || 0,
+                
+                // Assets & Liabilities (for reference)
+                total_assets: recent.totassetsend || 0,
+                total_liabilities: recent.totliabend || 0,
+                net_assets: recent.totnetassetend || 0,
+                
+                // People
+                employees: recent.totemployee || 0,
+                volunteers: recent.totvlnteers || 0,
+                voting_members: recent.indvotingmemberscnt || 0,
+                independent_voting_members: recent.indpndntvotingmemberscnt || 0,
+                
+                // Programs
+                mission: org.mission || 'N/A',
+                num_programs: recent.numofprogramservices || 0,
+                program_desc_1: recent.desc1 || 'N/A',
+                program_desc_2: recent.desc2 || 'N/A',
+                program_desc_3: recent.desc3 || 'N/A',
+                program_expense_1: recent.expense1 || 0,
+                program_expense_2: recent.expense2 || 0,
+                program_expense_3: recent.expense3 || 0,
+                
+                // Tax year and form
+                tax_year: recent.tax_prd_yr || 'N/A',
+                form_type: recent.formtype || 'N/A',
+                
+                // URLs
+                pdf_url: recent.pdf_url || '',
+                
                 error: null
             };
 
@@ -904,10 +1019,10 @@ ymca.net
             statsDiv.parentNode.insertBefore(exportBtn, statsDiv.nextSibling);
 
             const headers = section === 'batch-ein' 
-                ? ['EIN', 'Organization', 'Location', 'Revenue', 'Assets', 'Year']
+                ? ['EIN', 'Organization', 'City', 'State', 'Subsection', 'Revenue', 'Expenses', 'Net Assets', 'Employees', 'Volunteers', 'Programs', 'Year']
                 : section === 'batch-name'
-                ? ['Search Name', 'Matched Org', 'EIN', 'Location', 'Revenue', 'Year']
-                : ['Domain', 'Matched Org', 'EIN', 'Location', 'Revenue', 'Year'];
+                ? ['Search Name', 'Matched Org', 'EIN', 'City/State', 'Revenue', 'Expenses', 'Employees', 'Volunteers', 'Programs', 'Year']
+                : ['Domain', 'Matched Org', 'EIN', 'City/State', 'Revenue', 'Expenses', 'Employees', 'Volunteers', 'Programs', 'Year'];
 
             let tableHTML = '<thead><tr>';
             headers.forEach(h => tableHTML += `<th>${h}</th>`);
@@ -917,11 +1032,11 @@ ymca.net
                 if (row.error && row.error !== 'Basic info only') {
                     tableHTML += '<tr>';
                     if (section === 'batch-ein') {
-                        tableHTML += `<td>${row.ein}</td><td colspan="5" style="color: #c33;">${row.error}</td>`;
+                        tableHTML += `<td>${row.ein}</td><td colspan="11" style="color: #c33;">${row.error}</td>`;
                     } else if (section === 'batch-name') {
-                        tableHTML += `<td>${row.searchName}</td><td colspan="5" style="color: #c33;">${row.error}</td>`;
+                        tableHTML += `<td>${row.searchName}</td><td colspan="9" style="color: #c33;">${row.error}</td>`;
                     } else {
-                        tableHTML += `<td>${row.searchDomain}</td><td colspan="5" style="color: #c33;">${row.error}</td>`;
+                        tableHTML += `<td>${row.searchDomain}</td><td colspan="9" style="color: #c33;">${row.error}</td>`;
                     }
                     tableHTML += '</tr>';
                 } else {
@@ -931,10 +1046,16 @@ ymca.net
                         tableHTML += `
                             <td>${row.ein}</td>
                             <td>${row.name}</td>
-                            <td>${row.city}, ${row.state}</td>
-                            <td>$${formatNumber(row.revenue)}</td>
-                            <td>$${formatNumber(row.assets)}</td>
-                            <td>${row.year}</td>
+                            <td>${row.city}</td>
+                            <td>${row.state}</td>
+                            <td>${row.subsection}</td>
+                            <td>$${formatNumber(row.total_revenue)}</td>
+                            <td>$${formatNumber(row.total_expenses)}</td>
+                            <td>$${formatNumber(row.net_assets)}</td>
+                            <td>${formatNumber(row.employees)}</td>
+                            <td>${formatNumber(row.volunteers)}</td>
+                            <td>${row.num_programs || 0}</td>
+                            <td>${row.tax_year}</td>
                         `;
                     } else if (section === 'batch-name') {
                         tableHTML += `
@@ -942,8 +1063,12 @@ ymca.net
                             <td>${row.name}</td>
                             <td>${row.ein}</td>
                             <td>${row.city}, ${row.state}</td>
-                            <td>$${formatNumber(row.revenue)}</td>
-                            <td>${row.year}</td>
+                            <td>$${formatNumber(row.total_revenue)}</td>
+                            <td>$${formatNumber(row.total_expenses)}</td>
+                            <td>${formatNumber(row.employees)}</td>
+                            <td>${formatNumber(row.volunteers)}</td>
+                            <td>${row.num_programs || 0}</td>
+                            <td>${row.tax_year}</td>
                         `;
                     } else {
                         tableHTML += `
@@ -951,8 +1076,12 @@ ymca.net
                             <td>${row.name}</td>
                             <td>${row.ein}</td>
                             <td>${row.city}, ${row.state}</td>
-                            <td>$${formatNumber(row.revenue)}</td>
-                            <td>${row.year}</td>
+                            <td>$${formatNumber(row.total_revenue)}</td>
+                            <td>$${formatNumber(row.total_expenses)}</td>
+                            <td>${formatNumber(row.employees)}</td>
+                            <td>${formatNumber(row.volunteers)}</td>
+                            <td>${row.num_programs || 0}</td>
+                            <td>${row.tax_year}</td>
                         `;
                     }
                     tableHTML += '</tr>';
@@ -1016,23 +1145,72 @@ ymca.net
 
         function convertToCSV(data, section) {
             const headers = section === 'batch-ein'
-                ? ['EIN', 'Organization', 'City', 'State', 'Subsection', 'Revenue', 'Expenses', 'Assets', 'Year', 'Error']
+                ? ['EIN', 'Organization', 'Street Address', 'City', 'State', 'ZIP', 'Subsection', 'Classification', 'Ruling Year', 
+                   'Total Revenue', 'Revenue Prior Year', 'Contributions & Grants', 'Program Service Revenue', 'Investment Income', 'Other Revenue',
+                   'Total Expenses', 'Expenses Prior Year', 'Grants Paid', 'Salaries', 'Fundraising Expenses', 'Other Expenses',
+                   'Total Assets', 'Total Liabilities', 'Net Assets',
+                   'Employees', 'Volunteers', 'Voting Members', 'Independent Voting Members',
+                   'Mission', 'Number of Programs', 'Program 1 Description', 'Program 2 Description', 'Program 3 Description',
+                   'Program 1 Expense', 'Program 2 Expense', 'Program 3 Expense',
+                   'Tax Year', 'Form Type', 'PDF URL', 'Error']
                 : section === 'batch-name'
-                ? ['Search Name', 'Matched Organization', 'EIN', 'City', 'State', 'Subsection', 'Revenue', 'Expenses', 'Assets', 'Year', 'Error']
-                : ['Search Domain', 'Matched Organization', 'EIN', 'City', 'State', 'Subsection', 'Revenue', 'Expenses', 'Assets', 'Year', 'Error'];
+                ? ['Search Name', 'Matched Organization', 'EIN', 'Street Address', 'City', 'State', 'ZIP', 'Subsection', 
+                   'Total Revenue', 'Revenue Prior Year', 'Contributions & Grants', 'Program Service Revenue',
+                   'Total Expenses', 'Expenses Prior Year', 'Grants Paid', 'Salaries', 'Fundraising Expenses',
+                   'Total Assets', 'Net Assets',
+                   'Employees', 'Volunteers', 'Voting Members',
+                   'Mission', 'Number of Programs', 'Program 1 Description',
+                   'Tax Year', 'Form Type', 'PDF URL', 'Error']
+                : ['Search Domain', 'Matched Organization', 'EIN', 'Street Address', 'City', 'State', 'ZIP', 'Subsection',
+                   'Total Revenue', 'Revenue Prior Year', 'Contributions & Grants', 'Program Service Revenue',
+                   'Total Expenses', 'Expenses Prior Year', 'Grants Paid', 'Salaries', 'Fundraising Expenses',
+                   'Total Assets', 'Net Assets',
+                   'Employees', 'Volunteers', 'Voting Members',
+                   'Mission', 'Number of Programs', 'Program 1 Description',
+                   'Tax Year', 'Form Type', 'PDF URL', 'Error'];
 
             const rows = data.map(row => {
                 if (section === 'batch-ein') {
                     return [
                         row.ein,
                         `"${row.name || ''}"`,
+                        `"${row.street_address || ''}"`,
                         row.city || '',
                         row.state || '',
+                        row.zip || '',
                         row.subsection || '',
-                        row.revenue || '',
-                        row.expenses || '',
-                        row.assets || '',
-                        row.year || '',
+                        row.classification || '',
+                        row.ruling_year || '',
+                        row.total_revenue || '',
+                        row.total_revenue_prior || '',
+                        row.contributions_grants || '',
+                        row.program_service_revenue || '',
+                        row.investment_income || '',
+                        row.other_revenue || '',
+                        row.total_expenses || '',
+                        row.total_expenses_prior || '',
+                        row.grants_paid || '',
+                        row.salaries_compensation || '',
+                        row.fundraising_expenses || '',
+                        row.other_expenses || '',
+                        row.total_assets || '',
+                        row.total_liabilities || '',
+                        row.net_assets || '',
+                        row.employees || '',
+                        row.volunteers || '',
+                        row.voting_members || '',
+                        row.independent_voting_members || '',
+                        `"${row.mission || ''}"`,
+                        row.num_programs || '',
+                        `"${row.program_desc_1 || ''}"`,
+                        `"${row.program_desc_2 || ''}"`,
+                        `"${row.program_desc_3 || ''}"`,
+                        row.program_expense_1 || '',
+                        row.program_expense_2 || '',
+                        row.program_expense_3 || '',
+                        row.tax_year || '',
+                        row.form_type || '',
+                        row.pdf_url || '',
                         row.error || ''
                     ];
                 } else if (section === 'batch-name') {
@@ -1040,13 +1218,31 @@ ymca.net
                         `"${row.searchName || ''}"`,
                         `"${row.name || ''}"`,
                         row.ein || '',
+                        `"${row.street_address || ''}"`,
                         row.city || '',
                         row.state || '',
+                        row.zip || '',
                         row.subsection || '',
-                        row.revenue || '',
-                        row.expenses || '',
-                        row.assets || '',
-                        row.year || '',
+                        row.total_revenue || '',
+                        row.total_revenue_prior || '',
+                        row.contributions_grants || '',
+                        row.program_service_revenue || '',
+                        row.total_expenses || '',
+                        row.total_expenses_prior || '',
+                        row.grants_paid || '',
+                        row.salaries_compensation || '',
+                        row.fundraising_expenses || '',
+                        row.total_assets || '',
+                        row.net_assets || '',
+                        row.employees || '',
+                        row.volunteers || '',
+                        row.voting_members || '',
+                        `"${row.mission || ''}"`,
+                        row.num_programs || '',
+                        `"${row.program_desc_1 || ''}"`,
+                        row.tax_year || '',
+                        row.form_type || '',
+                        row.pdf_url || '',
                         row.error || ''
                     ];
                 } else {
@@ -1054,13 +1250,31 @@ ymca.net
                         row.searchDomain || '',
                         `"${row.name || ''}"`,
                         row.ein || '',
+                        `"${row.street_address || ''}"`,
                         row.city || '',
                         row.state || '',
+                        row.zip || '',
                         row.subsection || '',
-                        row.revenue || '',
-                        row.expenses || '',
-                        row.assets || '',
-                        row.year || '',
+                        row.total_revenue || '',
+                        row.total_revenue_prior || '',
+                        row.contributions_grants || '',
+                        row.program_service_revenue || '',
+                        row.total_expenses || '',
+                        row.total_expenses_prior || '',
+                        row.grants_paid || '',
+                        row.salaries_compensation || '',
+                        row.fundraising_expenses || '',
+                        row.total_assets || '',
+                        row.net_assets || '',
+                        row.employees || '',
+                        row.volunteers || '',
+                        row.voting_members || '',
+                        `"${row.mission || ''}"`,
+                        row.num_programs || '',
+                        `"${row.program_desc_1 || ''}"`,
+                        row.tax_year || '',
+                        row.form_type || '',
+                        row.pdf_url || '',
                         row.error || ''
                     ];
                 }
