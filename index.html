@@ -233,10 +233,18 @@
         .export-btn {
             margin-top: 20px;
             background: #28a745;
+            font-size: 1.1rem;
+            padding: 16px 40px;
         }
 
         .export-btn:hover:not(:disabled) {
             box-shadow: 0 8px 16px rgba(40, 167, 69, 0.3);
+            background: #218838;
+        }
+
+        .export-btn::before {
+            content: "📥 ";
+            font-size: 1.2rem;
         }
 
         .error {
@@ -375,7 +383,9 @@
                 <p>Fetching data from ProPublica...</p>
             </div>
 
-            <div class="results" id="single-results"></div>
+            <div class="results" id="single-results">
+                <button class="btn export-btn" onclick="exportSingleResult()" id="single-export-btn" style="display: none;">Download as CSV</button>
+            </div>
         </div>
 
         <!-- Batch by EIN Tab -->
@@ -405,7 +415,6 @@
 
             <div class="results" id="batch-ein-results">
                 <div class="stats" id="batch-ein-stats"></div>
-                <button class="btn export-btn" onclick="exportResults('batch-ein')">Export to CSV</button>
                 <table id="batch-ein-table"></table>
             </div>
         </div>
@@ -442,7 +451,6 @@ Habitat for Humanity
 
             <div class="results" id="batch-name-results">
                 <div class="stats" id="batch-name-stats"></div>
-                <button class="btn export-btn" onclick="exportResults('batch-name')">Export to CSV</button>
                 <table id="batch-name-table"></table>
             </div>
         </div>
@@ -474,7 +482,6 @@ ymca.net
 
             <div class="results" id="batch-domain-results">
                 <div class="stats" id="batch-domain-stats"></div>
-                <button class="btn export-btn" onclick="exportResults('batch-domain')">Export to CSV</button>
                 <table id="batch-domain-table"></table>
             </div>
         </div>
@@ -577,7 +584,7 @@ ymca.net
             }
 
             // Get detailed data for first result
-            const ein = orgs[0].ein.replace('-', '');
+            const ein = String(orgs[0].ein || '').replace('-', '');
             await lookupByEIN(ein, section);
         }
 
@@ -596,7 +603,7 @@ ymca.net
             }
 
             // Get detailed data for first result
-            const ein = orgs[0].ein.replace('-', '');
+            const ein = String(orgs[0].ein || '').replace('-', '');
             await lookupByEIN(ein, section);
         }
 
@@ -604,6 +611,23 @@ ymca.net
             const org = data.organization || {};
             const filings = data.filings_with_data || [];
             const recent = filings[0] || {};
+
+            // Store for export
+            window.singleResultData = {
+                ein: org.ein || 'N/A',
+                name: org.name || 'N/A',
+                city: org.city || 'N/A',
+                state: org.state || 'N/A',
+                subsection: org.subsection_code || 'N/A',
+                ruling_year: org.ruling_year || 'N/A',
+                recent_year: recent.tax_prd_yr || 'N/A',
+                form_type: recent.formtype || 'N/A',
+                revenue: recent.totrevenue || 0,
+                expenses: recent.totfuncexpns || 0,
+                assets: recent.totassetsend || 0,
+                liabilities: recent.totliabend || 0,
+                pdf_url: recent.pdf_url || ''
+            };
 
             const resultsDiv = document.getElementById('single-results');
             resultsDiv.innerHTML = `
@@ -663,6 +687,7 @@ ymca.net
             `;
 
             resultsDiv.classList.add('active');
+            document.getElementById('single-export-btn').style.display = 'block';
         }
 
         async function lookupBatchEIN() {
@@ -708,7 +733,7 @@ ymca.net
                     }
 
                     const bestMatch = orgs[0];
-                    const ein = bestMatch.ein.replace('-', '');
+                    const ein = String(bestMatch.ein || '').replace('-', '');
 
                     const detailResponse = await fetch(`${API_BASE}/organization/${ein}`);
                     if (detailResponse.ok) {
@@ -751,7 +776,7 @@ ymca.net
                     }
 
                     const bestMatch = orgs[0];
-                    const ein = bestMatch.ein.replace('-', '');
+                    const ein = String(bestMatch.ein || '').replace('-', '');
 
                     const detailResponse = await fetch(`${API_BASE}/organization/${ein}`);
                     if (detailResponse.ok) {
@@ -870,6 +895,14 @@ ymca.net
                 </div>
             `;
 
+            const exportBtn = document.createElement('button');
+            exportBtn.className = 'btn export-btn';
+            exportBtn.onclick = () => exportResults(section);
+            exportBtn.textContent = `Export ${data.length} Records to CSV`;
+            
+            const statsDiv = document.getElementById(`${section}-stats`);
+            statsDiv.parentNode.insertBefore(exportBtn, statsDiv.nextSibling);
+
             const headers = section === 'batch-ein' 
                 ? ['EIN', 'Organization', 'Location', 'Revenue', 'Assets', 'Year']
                 : section === 'batch-name'
@@ -929,6 +962,39 @@ ymca.net
             tableHTML += '</tbody>';
             document.getElementById(`${section}-table`).innerHTML = tableHTML;
             document.getElementById(`${section}-results`).classList.add('active');
+        }
+
+        function exportSingleResult() {
+            if (!window.singleResultData) {
+                alert('No data to export');
+                return;
+            }
+
+            const headers = ['EIN', 'Organization', 'City', 'State', 'Subsection', 'Ruling Year', 'Recent Tax Year', 'Form Type', 'Revenue', 'Expenses', 'Assets', 'Liabilities', 'PDF URL'];
+            const row = [
+                window.singleResultData.ein,
+                `"${window.singleResultData.name}"`,
+                window.singleResultData.city,
+                window.singleResultData.state,
+                window.singleResultData.subsection,
+                window.singleResultData.ruling_year,
+                window.singleResultData.recent_year,
+                window.singleResultData.form_type,
+                window.singleResultData.revenue,
+                window.singleResultData.expenses,
+                window.singleResultData.assets,
+                window.singleResultData.liabilities,
+                window.singleResultData.pdf_url
+            ];
+
+            const csv = [headers.join(','), row.join(',')].join('\n');
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `990_single_result_${window.singleResultData.ein}_${Date.now()}.csv`;
+            a.click();
+            window.URL.revokeObjectURL(url);
         }
 
         function exportResults(section) {
