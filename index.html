@@ -1,0 +1,1029 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>990 Lookup Tool - Golden Volunteer</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2rem;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            opacity: 0.9;
+            font-size: 1.1rem;
+        }
+
+        .tabs {
+            display: flex;
+            background: #f7f7f7;
+            border-bottom: 2px solid #e0e0e0;
+            flex-wrap: wrap;
+        }
+
+        .tab {
+            flex: 1;
+            min-width: 150px;
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+            border: none;
+            background: transparent;
+            font-size: 1rem;
+        }
+
+        .tab:hover {
+            background: #e8e8e8;
+        }
+
+        .tab.active {
+            background: white;
+            color: #667eea;
+            border-bottom: 3px solid #667eea;
+        }
+
+        .tab-content {
+            display: none;
+            padding: 30px;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .input-group input, .input-group textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.3s;
+        }
+
+        .input-group input:focus, .input-group textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .input-group textarea {
+            min-height: 150px;
+            font-family: monospace;
+            resize: vertical;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 14px 32px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 16px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 30px;
+        }
+
+        .loading.active {
+            display: block;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 30px;
+            background: #f0f0f0;
+            border-radius: 15px;
+            overflow: hidden;
+            margin: 20px 0;
+            display: none;
+        }
+
+        .progress-bar.active {
+            display: block;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            transition: width 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+        }
+
+        .results {
+            margin-top: 30px;
+            display: none;
+        }
+
+        .results.active {
+            display: block;
+        }
+
+        .result-card {
+            background: #f9f9f9;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 15px;
+        }
+
+        .result-card h3 {
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+
+        .result-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid #e8e8e8;
+        }
+
+        .result-row:last-child {
+            border-bottom: none;
+        }
+
+        .result-label {
+            font-weight: 600;
+            color: #666;
+        }
+
+        .result-value {
+            color: #333;
+            text-align: right;
+        }
+
+        .export-btn {
+            margin-top: 20px;
+            background: #28a745;
+        }
+
+        .export-btn:hover:not(:disabled) {
+            box-shadow: 0 8px 16px rgba(40, 167, 69, 0.3);
+        }
+
+        .error {
+            background: #fee;
+            border: 1px solid #fcc;
+            color: #c33;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+
+        .success {
+            background: #efe;
+            border: 1px solid #cfc;
+            color: #363;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+
+        .info-box {
+            background: #e3f2fd;
+            border-left: 4px solid #2196f3;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 4px;
+        }
+
+        .info-box strong {
+            color: #1976d2;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            overflow-x: auto;
+            display: block;
+        }
+
+        thead, tbody {
+            display: table;
+            width: 100%;
+            table-layout: fixed;
+        }
+
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #e0e0e0;
+            word-wrap: break-word;
+        }
+
+        th {
+            background: #f5f5f5;
+            font-weight: 600;
+            color: #667eea;
+            position: sticky;
+            top: 0;
+        }
+
+        tr:hover {
+            background: #f9f9f9;
+        }
+
+        @media (max-width: 768px) {
+            .tabs {
+                flex-direction: column;
+            }
+            
+            .tab {
+                width: 100%;
+            }
+            
+            .stat-card {
+                min-width: 150px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🏛️ 990 Data Lookup Tool</h1>
+            <p>Fetch nonprofit financial data from ProPublica's Nonprofit Explorer</p>
+        </div>
+
+        <div class="tabs">
+            <button class="tab active" onclick="switchTab('single')">Single Lookup</button>
+            <button class="tab" onclick="switchTab('batch-ein')">Batch by EIN</button>
+            <button class="tab" onclick="switchTab('batch-name')">Batch by Name</button>
+            <button class="tab" onclick="switchTab('batch-domain')">Batch by Domain</button>
+        </div>
+
+        <!-- Single Lookup Tab -->
+        <div id="single" class="tab-content active">
+            <div class="info-box">
+                <strong>Single Lookup:</strong> Enter an EIN, organization name, or domain to get detailed nonprofit information.
+            </div>
+
+            <div class="input-group">
+                <label for="single-input">Enter EIN, Name, or Domain</label>
+                <input type="text" id="single-input" placeholder="e.g., 53-0196605, Red Cross, or redcross.org" />
+            </div>
+
+            <button class="btn" onclick="lookupSingle()">Lookup Organization</button>
+
+            <div class="loading" id="single-loading">
+                <div class="spinner"></div>
+                <p>Fetching data from ProPublica...</p>
+            </div>
+
+            <div class="results" id="single-results"></div>
+        </div>
+
+        <!-- Batch by EIN Tab -->
+        <div id="batch-ein" class="tab-content">
+            <div class="info-box">
+                <strong>Batch Lookup by EIN:</strong> Enter multiple EINs (one per line) to process them all at once.
+            </div>
+
+            <div class="input-group">
+                <label for="batch-ein-input">Enter EINs (one per line)</label>
+                <textarea id="batch-ein-input" placeholder="53-0196605
+13-1685039
+94-1156278
+..."></textarea>
+            </div>
+
+            <button class="btn" onclick="lookupBatchEIN()" id="batch-ein-btn">Process Batch</button>
+
+            <div class="progress-bar" id="batch-ein-progress">
+                <div class="progress-fill" id="batch-ein-progress-fill">0%</div>
+            </div>
+
+            <div class="loading" id="batch-ein-loading">
+                <div class="spinner"></div>
+                <p id="batch-ein-status">Processing organizations...</p>
+            </div>
+
+            <div class="results" id="batch-ein-results">
+                <div class="stats" id="batch-ein-stats"></div>
+                <button class="btn export-btn" onclick="exportResults('batch-ein')">Export to CSV</button>
+                <table id="batch-ein-table"></table>
+            </div>
+        </div>
+
+        <!-- Batch by Name Tab -->
+        <div id="batch-name" class="tab-content">
+            <div class="info-box">
+                <strong>Batch Lookup by Name:</strong> Enter organization names (one per line) to find and process them.
+            </div>
+
+            <div class="input-group">
+                <label for="batch-name-input">Enter Organization Names (one per line)</label>
+                <textarea id="batch-name-input" placeholder="American Red Cross
+YMCA of Greater Boston
+Habitat for Humanity
+..."></textarea>
+            </div>
+
+            <div class="input-group">
+                <label for="batch-name-state">State Filter (optional)</label>
+                <input type="text" id="batch-name-state" placeholder="e.g., CA, NY, TX" maxlength="2" />
+            </div>
+
+            <button class="btn" onclick="lookupBatchName()" id="batch-name-btn">Process Batch</button>
+
+            <div class="progress-bar" id="batch-name-progress">
+                <div class="progress-fill" id="batch-name-progress-fill">0%</div>
+            </div>
+
+            <div class="loading" id="batch-name-loading">
+                <div class="spinner"></div>
+                <p id="batch-name-status">Processing organizations...</p>
+            </div>
+
+            <div class="results" id="batch-name-results">
+                <div class="stats" id="batch-name-stats"></div>
+                <button class="btn export-btn" onclick="exportResults('batch-name')">Export to CSV</button>
+                <table id="batch-name-table"></table>
+            </div>
+        </div>
+
+        <!-- Batch by Domain Tab -->
+        <div id="batch-domain" class="tab-content">
+            <div class="info-box">
+                <strong>Batch Lookup by Domain:</strong> Enter website domains (one per line) to find organizations.
+            </div>
+
+            <div class="input-group">
+                <label for="batch-domain-input">Enter Domains (one per line)</label>
+                <textarea id="batch-domain-input" placeholder="redcross.org
+habitat.org
+ymca.net
+..."></textarea>
+            </div>
+
+            <button class="btn" onclick="lookupBatchDomain()" id="batch-domain-btn">Process Batch</button>
+
+            <div class="progress-bar" id="batch-domain-progress">
+                <div class="progress-fill" id="batch-domain-progress-fill">0%</div>
+            </div>
+
+            <div class="loading" id="batch-domain-loading">
+                <div class="spinner"></div>
+                <p id="batch-domain-status">Processing domains...</p>
+            </div>
+
+            <div class="results" id="batch-domain-results">
+                <div class="stats" id="batch-domain-stats"></div>
+                <button class="btn export-btn" onclick="exportResults('batch-domain')">Export to CSV</button>
+                <table id="batch-domain-table"></table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = '/api';
+        let resultsData = {
+            'batch-ein': [],
+            'batch-name': [],
+            'batch-domain': []
+        };
+
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+
+            document.getElementById(tabName).classList.add('active');
+            event.target.classList.add('active');
+
+            // Clear results
+            document.querySelectorAll('.results').forEach(result => {
+                result.classList.remove('active');
+            });
+        }
+
+        function detectInputType(input) {
+            input = input.trim();
+            // Check if it's an EIN (9 digits with optional hyphen)
+            if (/^\d{2}-?\d{7}$/.test(input)) {
+                return { type: 'ein', value: input };
+            }
+            // Check if it's a domain
+            if (/^[a-z0-9][a-z0-9-]*\.[a-z]{2,}$/i.test(input) || input.includes('.org') || input.includes('.com')) {
+                return { type: 'domain', value: input };
+            }
+            // Otherwise, treat as name
+            return { type: 'name', value: input };
+        }
+
+        async function lookupSingle() {
+            const input = document.getElementById('single-input').value.trim();
+            
+            if (!input) {
+                showError('single', 'Please enter an EIN, name, or domain');
+                return;
+            }
+
+            const detected = detectInputType(input);
+            showLoading('single', true);
+            document.getElementById('single-results').classList.remove('active');
+
+            try {
+                if (detected.type === 'ein') {
+                    await lookupByEIN(input, 'single');
+                } else if (detected.type === 'domain') {
+                    await lookupByDomain(input, 'single');
+                } else {
+                    await lookupByName(input, 'single');
+                }
+            } catch (error) {
+                showError('single', error.message);
+            } finally {
+                showLoading('single', false);
+            }
+        }
+
+        async function lookupByEIN(ein, section) {
+            const response = await fetch(`${API_BASE}/organization/${ein}`);
+            
+            if (!response.ok) {
+                throw new Error(`Organization not found (${response.status})`);
+            }
+
+            const data = await response.json();
+            displaySingleResult(data, section);
+        }
+
+        async function lookupByName(name, section, state = '') {
+            let url = `${API_BASE}/search?q=${encodeURIComponent(name)}`;
+            if (state) {
+                url += `&state=${state}`;
+            }
+
+            const response = await fetch(url);
+            
+            if (!response.ok) {
+                throw new Error(`Search failed (${response.status})`);
+            }
+
+            const data = await response.json();
+            const orgs = data.organizations || [];
+
+            if (orgs.length === 0) {
+                throw new Error('No organizations found');
+            }
+
+            // Get detailed data for first result
+            const ein = orgs[0].ein.replace('-', '');
+            await lookupByEIN(ein, section);
+        }
+
+        async function lookupByDomain(domain, section) {
+            const response = await fetch(`${API_BASE}/search-domain?domain=${encodeURIComponent(domain)}`);
+            
+            if (!response.ok) {
+                throw new Error(`Search failed (${response.status})`);
+            }
+
+            const data = await response.json();
+            const orgs = data.organizations || [];
+
+            if (orgs.length === 0) {
+                throw new Error('No organizations found for this domain');
+            }
+
+            // Get detailed data for first result
+            const ein = orgs[0].ein.replace('-', '');
+            await lookupByEIN(ein, section);
+        }
+
+        function displaySingleResult(data) {
+            const org = data.organization || {};
+            const filings = data.filings_with_data || [];
+            const recent = filings[0] || {};
+
+            const resultsDiv = document.getElementById('single-results');
+            resultsDiv.innerHTML = `
+                <div class="result-card">
+                    <h3>${org.name || 'Unknown Organization'}</h3>
+                    <div class="result-row">
+                        <span class="result-label">EIN:</span>
+                        <span class="result-value">${org.ein || 'N/A'}</span>
+                    </div>
+                    <div class="result-row">
+                        <span class="result-label">Location:</span>
+                        <span class="result-value">${org.city || 'N/A'}, ${org.state || 'N/A'}</span>
+                    </div>
+                    <div class="result-row">
+                        <span class="result-label">Subsection:</span>
+                        <span class="result-value">${org.subsection_code || 'N/A'}</span>
+                    </div>
+                    <div class="result-row">
+                        <span class="result-label">Ruling Year:</span>
+                        <span class="result-value">${org.ruling_year || 'N/A'}</span>
+                    </div>
+                </div>
+
+                ${recent.tax_prd_yr ? `
+                <div class="result-card">
+                    <h3>Most Recent Filing (${recent.tax_prd_yr})</h3>
+                    <div class="result-row">
+                        <span class="result-label">Form Type:</span>
+                        <span class="result-value">${recent.formtype || 'N/A'}</span>
+                    </div>
+                    <div class="result-row">
+                        <span class="result-label">Total Revenue:</span>
+                        <span class="result-value">$${formatNumber(recent.totrevenue)}</span>
+                    </div>
+                    <div class="result-row">
+                        <span class="result-label">Total Expenses:</span>
+                        <span class="result-value">$${formatNumber(recent.totfuncexpns)}</span>
+                    </div>
+                    <div class="result-row">
+                        <span class="result-label">Total Assets:</span>
+                        <span class="result-value">$${formatNumber(recent.totassetsend)}</span>
+                    </div>
+                    <div class="result-row">
+                        <span class="result-label">Total Liabilities:</span>
+                        <span class="result-value">$${formatNumber(recent.totliabend)}</span>
+                    </div>
+                    ${recent.pdf_url ? `
+                    <div class="result-row">
+                        <span class="result-label">990 PDF:</span>
+                        <span class="result-value"><a href="${recent.pdf_url}" target="_blank">View PDF</a></span>
+                    </div>
+                    ` : ''}
+                </div>
+                ` : '<div class="error">No recent filings available</div>'}
+
+                <div class="success">Total filings available: ${filings.length}</div>
+            `;
+
+            resultsDiv.classList.add('active');
+        }
+
+        async function lookupBatchEIN() {
+            const input = document.getElementById('batch-ein-input').value.trim();
+            const eins = input.split('\n').map(e => e.trim().replace('-', '')).filter(e => e);
+
+            if (eins.length === 0) {
+                showError('batch-ein', 'Please enter at least one EIN');
+                return;
+            }
+
+            await processBatch('batch-ein', eins, async (item) => {
+                const response = await fetch(`${API_BASE}/organization/${item}`);
+                if (!response.ok) {
+                    return { ein: item, error: 'Not found' };
+                }
+                const data = await response.json();
+                return extractOrgData(data, item, 'ein');
+            });
+        }
+
+        async function lookupBatchName() {
+            const input = document.getElementById('batch-name-input').value.trim();
+            const state = document.getElementById('batch-name-state').value.trim().toUpperCase();
+            const names = input.split('\n').map(n => n.trim()).filter(n => n);
+
+            if (names.length === 0) {
+                showError('batch-name', 'Please enter at least one organization name');
+                return;
+            }
+
+            await processBatch('batch-name', names, async (name) => {
+                try {
+                    let url = `${API_BASE}/search?q=${encodeURIComponent(name)}`;
+                    if (state) url += `&state=${state}`;
+
+                    const searchResponse = await fetch(url);
+                    const searchData = await searchResponse.json();
+                    const orgs = searchData.organizations || [];
+
+                    if (orgs.length === 0) {
+                        return { searchName: name, ein: 'N/A', name: 'Not found', error: 'Not found' };
+                    }
+
+                    const bestMatch = orgs[0];
+                    const ein = bestMatch.ein.replace('-', '');
+
+                    const detailResponse = await fetch(`${API_BASE}/organization/${ein}`);
+                    if (detailResponse.ok) {
+                        const detailData = await detailResponse.json();
+                        return extractOrgData(detailData, name, 'name');
+                    } else {
+                        return {
+                            searchName: name,
+                            ein: bestMatch.ein,
+                            name: bestMatch.name,
+                            city: bestMatch.city,
+                            state: bestMatch.state,
+                            revenue: 0,
+                            error: 'Basic info only'
+                        };
+                    }
+                } catch (error) {
+                    return { searchName: name, error: error.message };
+                }
+            });
+        }
+
+        async function lookupBatchDomain() {
+            const input = document.getElementById('batch-domain-input').value.trim();
+            const domains = input.split('\n').map(d => d.trim()).filter(d => d);
+
+            if (domains.length === 0) {
+                showError('batch-domain', 'Please enter at least one domain');
+                return;
+            }
+
+            await processBatch('batch-domain', domains, async (domain) => {
+                try {
+                    const response = await fetch(`${API_BASE}/search-domain?domain=${encodeURIComponent(domain)}`);
+                    const data = await response.json();
+                    const orgs = data.organizations || [];
+
+                    if (orgs.length === 0) {
+                        return { searchDomain: domain, ein: 'N/A', name: 'Not found', error: 'Not found' };
+                    }
+
+                    const bestMatch = orgs[0];
+                    const ein = bestMatch.ein.replace('-', '');
+
+                    const detailResponse = await fetch(`${API_BASE}/organization/${ein}`);
+                    if (detailResponse.ok) {
+                        const detailData = await detailResponse.json();
+                        return extractOrgData(detailData, domain, 'domain');
+                    } else {
+                        return {
+                            searchDomain: domain,
+                            ein: bestMatch.ein,
+                            name: bestMatch.name,
+                            city: bestMatch.city,
+                            state: bestMatch.state,
+                            revenue: 0,
+                            error: 'Basic info only'
+                        };
+                    }
+                } catch (error) {
+                    return { searchDomain: domain, error: error.message };
+                }
+            });
+        }
+
+        function extractOrgData(data, searchTerm, type) {
+            const org = data.organization || {};
+            const recent = data.filings_with_data?.[0] || {};
+
+            const baseData = {
+                ein: org.ein || 'N/A',
+                name: org.name || 'N/A',
+                city: org.city || 'N/A',
+                state: org.state || 'N/A',
+                subsection: org.subsection_code || 'N/A',
+                revenue: recent.totrevenue || 0,
+                expenses: recent.totfuncexpns || 0,
+                assets: recent.totassetsend || 0,
+                year: recent.tax_prd_yr || 'N/A',
+                error: null
+            };
+
+            if (type === 'name') {
+                baseData.searchName = searchTerm;
+            } else if (type === 'domain') {
+                baseData.searchDomain = searchTerm;
+            }
+
+            return baseData;
+        }
+
+        async function processBatch(section, items, processor) {
+            if (items.length > 100 && !confirm(`You entered ${items.length} items. This may take several minutes. Continue?`)) {
+                return;
+            }
+
+            const btn = document.getElementById(`${section}-btn`);
+            btn.disabled = true;
+            showLoading(section, true);
+            document.getElementById(`${section}-progress`).classList.add('active');
+            document.getElementById(`${section}-results`).classList.remove('active');
+
+            resultsData[section] = [];
+            let completed = 0;
+
+            for (const item of items) {
+                try {
+                    const result = await processor(item);
+                    resultsData[section].push(result);
+                } catch (error) {
+                    resultsData[section].push({ 
+                        [section === 'batch-ein' ? 'ein' : section === 'batch-name' ? 'searchName' : 'searchDomain']: item, 
+                        error: error.message 
+                    });
+                }
+
+                completed++;
+                updateProgress(section, completed, items.length);
+                document.getElementById(`${section}-status`).textContent = 
+                    `Processing ${completed} of ${items.length}...`;
+
+                await new Promise(resolve => setTimeout(resolve, 150));
+            }
+
+            showLoading(section, false);
+            displayBatchResults(section);
+            btn.disabled = false;
+        }
+
+        function displayBatchResults(section) {
+            const data = resultsData[section];
+            const successCount = data.filter(r => !r.error || r.error === 'Basic info only').length;
+            const errorCount = data.filter(r => r.error && r.error !== 'Basic info only').length;
+            
+            const revenues = data.filter(r => r.revenue && r.revenue > 0).map(r => r.revenue);
+            const avgRevenue = revenues.length > 0 ? revenues.reduce((a, b) => a + b, 0) / revenues.length : 0;
+            const medianRevenue = revenues.length > 0 ? revenues.sort((a, b) => a - b)[Math.floor(revenues.length / 2)] : 0;
+
+            document.getElementById(`${section}-stats`).innerHTML = `
+                <div class="stat-card">
+                    <div class="stat-value">${data.length}</div>
+                    <div class="stat-label">Total Processed</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">${successCount}</div>
+                    <div class="stat-label">Found</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">${errorCount}</div>
+                    <div class="stat-label">Errors</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">$${formatNumber(avgRevenue)}</div>
+                    <div class="stat-label">Avg Revenue</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">$${formatNumber(medianRevenue)}</div>
+                    <div class="stat-label">Median Revenue</div>
+                </div>
+            `;
+
+            const headers = section === 'batch-ein' 
+                ? ['EIN', 'Organization', 'Location', 'Revenue', 'Assets', 'Year']
+                : section === 'batch-name'
+                ? ['Search Name', 'Matched Org', 'EIN', 'Location', 'Revenue', 'Year']
+                : ['Domain', 'Matched Org', 'EIN', 'Location', 'Revenue', 'Year'];
+
+            let tableHTML = '<thead><tr>';
+            headers.forEach(h => tableHTML += `<th>${h}</th>`);
+            tableHTML += '</tr></thead><tbody>';
+
+            data.forEach(row => {
+                if (row.error && row.error !== 'Basic info only') {
+                    tableHTML += '<tr>';
+                    if (section === 'batch-ein') {
+                        tableHTML += `<td>${row.ein}</td><td colspan="5" style="color: #c33;">${row.error}</td>`;
+                    } else if (section === 'batch-name') {
+                        tableHTML += `<td>${row.searchName}</td><td colspan="5" style="color: #c33;">${row.error}</td>`;
+                    } else {
+                        tableHTML += `<td>${row.searchDomain}</td><td colspan="5" style="color: #c33;">${row.error}</td>`;
+                    }
+                    tableHTML += '</tr>';
+                } else {
+                    const style = row.error === 'Basic info only' ? 'style="color: #f90;"' : '';
+                    tableHTML += `<tr ${style}>`;
+                    if (section === 'batch-ein') {
+                        tableHTML += `
+                            <td>${row.ein}</td>
+                            <td>${row.name}</td>
+                            <td>${row.city}, ${row.state}</td>
+                            <td>$${formatNumber(row.revenue)}</td>
+                            <td>$${formatNumber(row.assets)}</td>
+                            <td>${row.year}</td>
+                        `;
+                    } else if (section === 'batch-name') {
+                        tableHTML += `
+                            <td>${row.searchName}</td>
+                            <td>${row.name}</td>
+                            <td>${row.ein}</td>
+                            <td>${row.city}, ${row.state}</td>
+                            <td>$${formatNumber(row.revenue)}</td>
+                            <td>${row.year}</td>
+                        `;
+                    } else {
+                        tableHTML += `
+                            <td>${row.searchDomain}</td>
+                            <td>${row.name}</td>
+                            <td>${row.ein}</td>
+                            <td>${row.city}, ${row.state}</td>
+                            <td>$${formatNumber(row.revenue)}</td>
+                            <td>${row.year}</td>
+                        `;
+                    }
+                    tableHTML += '</tr>';
+                }
+            });
+
+            tableHTML += '</tbody>';
+            document.getElementById(`${section}-table`).innerHTML = tableHTML;
+            document.getElementById(`${section}-results`).classList.add('active');
+        }
+
+        function exportResults(section) {
+            const data = resultsData[section];
+            if (data.length === 0) {
+                alert('No data to export');
+                return;
+            }
+
+            const csv = convertToCSV(data, section);
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `990_${section}_results_${Date.now()}.csv`;
+            a.click();
+            window.URL.revokeObjectURL(url);
+        }
+
+        function convertToCSV(data, section) {
+            const headers = section === 'batch-ein'
+                ? ['EIN', 'Organization', 'City', 'State', 'Subsection', 'Revenue', 'Expenses', 'Assets', 'Year', 'Error']
+                : section === 'batch-name'
+                ? ['Search Name', 'Matched Organization', 'EIN', 'City', 'State', 'Subsection', 'Revenue', 'Expenses', 'Assets', 'Year', 'Error']
+                : ['Search Domain', 'Matched Organization', 'EIN', 'City', 'State', 'Subsection', 'Revenue', 'Expenses', 'Assets', 'Year', 'Error'];
+
+            const rows = data.map(row => {
+                if (section === 'batch-ein') {
+                    return [
+                        row.ein,
+                        `"${row.name || ''}"`,
+                        row.city || '',
+                        row.state || '',
+                        row.subsection || '',
+                        row.revenue || '',
+                        row.expenses || '',
+                        row.assets || '',
+                        row.year || '',
+                        row.error || ''
+                    ];
+                } else if (section === 'batch-name') {
+                    return [
+                        `"${row.searchName || ''}"`,
+                        `"${row.name || ''}"`,
+                        row.ein || '',
+                        row.city || '',
+                        row.state || '',
+                        row.subsection || '',
+                        row.revenue || '',
+                        row.expenses || '',
+                        row.assets || '',
+                        row.year || '',
+                        row.error || ''
+                    ];
+                } else {
+                    return [
+                        row.searchDomain || '',
+                        `"${row.name || ''}"`,
+                        row.ein || '',
+                        row.city || '',
+                        row.state || '',
+                        row.subsection || '',
+                        row.revenue || '',
+                        row.expenses || '',
+                        row.assets || '',
+                        row.year || '',
+                        row.error || ''
+                    ];
+                }
+            });
+
+            return [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
+        }
+
+        function updateProgress(section, completed, total) {
+            const percent = Math.round((completed / total) * 100);
+            const fill = document.getElementById(`${section}-progress-fill`);
+            fill.style.width = `${percent}%`;
+            fill.textContent = `${percent}%`;
+        }
+
+        function formatNumber(num) {
+            if (!num || num === 0) return '0';
+            return Math.round(num).toLocaleString();
+        }
+
+        function showLoading(section, show) {
+            document.getElementById(`${section}-loading`).classList.toggle('active', show);
+        }
+
+        function showError(section, message) {
+            const resultsDiv = document.getElementById(`${section}-results`);
+            resultsDiv.innerHTML = `<div class="error"><strong>Error:</strong> ${message}</div>`;
+            resultsDiv.classList.add('active');
+        }
+    </script>
+</body>
+</html>
